@@ -1112,8 +1112,7 @@ static void div_reset(const NbeCmd *c) {   /* a RESET was accepted: set up the n
             c->div.location ? loc_variation(div_data(c->div.location)) : -1);
 }
 void div_reject(int i) { if (i >= 0 && i < NBE_MAXP) g_div_err |= 1 << i; }
-/* window play (no env): the battle setup from the command line (--div-location N, --div-theme N, --div-chr a,b,..,
- * --div-skin a,b,..; global data ids, 0 = default). Applied at every PLAY (offline.c my_start). No flag = default battles. */
+/* window play: the battle setup from the --div-* flags, applied at every PLAY (offline.c my_start). */
 static NbeCmd g_win_div; static int g_win_div_on;
 int div_window_arg(const char *key, const char *val) {
     if (!strcmp(key, "location")) g_win_div.div.location = atoi(val);
@@ -1899,10 +1898,7 @@ void hits_dump(const char *why) {
     for (int i = 0; i < g_nhit; i++) if (g_hits[i] - g_hits0[i]) LOG(" %lx=%ld", (unsigned long)g_hit_addr[i], g_hits[i] - g_hits0[i]);
     LOG("\n");
 }
-/* window play (no --env, --cube-rules, on by default in play.sh): the Showdown cube rules without the env's command loop:
- * the pickup credit (item_tick, after every battle tick: +400 HP and +400 max HP, the cube counted), +10 % damage per cube
- * at the damage root (the attacker's cubes, as the env's my_root), and the power-cube counter (cube_counter_install).
- * Nothing else of the env (storm, leaps, damage model) runs. */
+/* window play (no --env): cube pickups, +10 % damage per cube and the cube counter. */
 extern void *g_sim;
 static int w_moving;   /* WASD: the local brawler is being moved by the keys */
 static void window_move(void *sim, int li) {   /* WASD = the move the env's joystick would make (joy_target_at) */
@@ -1919,9 +1915,7 @@ static void window_move(void *sim, int li) {   /* WASD = the move the env's joys
     }
 }
 static int w_end_tick = -1; static int w_exit_sent; static int w_left = -1;
-/* window play: brawlers left = the players still alive. A player who is out loses sdPlayersLeft (+0x48), as the native
- * HUD expects. One left ends the battle (the native end flag, 0x121) and the Exit button (input kind 4) follows 5 s later,
- * which takes the local player to the main menu. Its own code: elimination_tick (the env tracker) is not called here. */
+/* window play: brawlers left. One left ends the battle; the Exit press (input kind 4) follows 5 s later. */
 static void window_elim(void *sim) {
     int np, alive = 0, total = 0, tick = I32(sim, 0x10); void **ps = players(sim, &np);
     for (int i = 0; i < np && i < NBE_MAXP; i++) {
@@ -1945,7 +1939,7 @@ void window_tick(void *sim) {   /* after every battle tick (offline.c my_tick) *
     if (g_window_elim) window_elim(sim);
     window_move(sim, local_index() < 0 ? 0 : local_index());
     if (g_window_cubes) item_tick(sim);
-    if (g_window_storm) {   /* the storm schedule: queues the hits for the next tick */
+    if (g_window_storm) {
         E.step_start = -1;   /* no env step: the storm uses the simulation tick (gas_test_step) */
         gas_tick(sim);
         int t = I32(sim, 0x10), W, Hh, np, nalive = 0, ingas = 0; void **ps = players(sim, &np);
@@ -1956,7 +1950,6 @@ void window_tick(void *sim) {   /* after every battle tick (offline.c my_tick) *
         (void)wh_logged;
     }
 }
-/* before every battle tick: apply the storm hits queued by the last tick (the env's pre_snapshot does this part only) */
 void window_storm_hits(void *sim) {
     if (!g_window_storm || sim != g_sim) return;
     for (int i = 0; i < E.ngq; i++) {
@@ -1982,13 +1975,13 @@ static uint64_t win_root(void *victim, int a1, int dmg, int a3, int a4, void *at
     return o_root(victim, a1, dmg, a3, a4, attacker, src, a7, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9);
 }
 static void window_rules_install(void) {
-    o_root = hook_replace(g_libg, 0xb422d0, win_root);   /* every window battle: the projectile travel damage (Piper) */
+    o_root = hook_replace(g_libg, 0xb422d0, win_root);
     LOG("[window] projectile travel damage on (Piper 20 %% at short range, 100 %% at the end of the range)\n");
     if (g_window_cubes) {
         if (g_cube_counter) cube_counter_install();
         LOG("[window] cube rules on: pickup credit (+400 HP), +10 %% damage per cube, cube counter %s\n", g_cube_counter ? "on" : "off");
     }
-    if (g_window_storm) {   /* the storm: the env's schedule and damage, on the simulation clock (no fog-renderer latch) */
+    if (g_window_storm) {   /* the simulation clock, not the phone's fog-renderer latch */
         E.gas_on = 1; g_gas_model = 0; g_gas_render_lag = 0;
         LOG("[window] storm rules on: 20 %%/s of max HP, +5 %%/s after 5 s, the storm of the simulation clock\n");
     }

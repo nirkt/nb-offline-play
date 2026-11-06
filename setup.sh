@@ -1,15 +1,14 @@
 #!/usr/bin/env bash
-# Set up the repo on Ubuntu / Debian: system packages, the game files, the emulator, the game host and the renderer.
+# Set up the repo (Ubuntu / Debian): system packages, game files, emulator, game host, renderer.
 #
 #   ./setup.sh                          everything (uses sudo for the system packages)
 #   ./setup.sh --skip-apt               the system packages are already installed
-#   NB_APK_URL=https://host/apk ./setup.sh   download the APK from where you host it (checked by its sha256)
+#   NB_APK_URL=<link> ./setup.sh        download the APK from a link
 #
-# The large files are not in git: the APK (1.17 GB) and the qemu source (129 MB). The APK is put in apk/ by hand or
-# downloaded with NB_APK_URL; the qemu source is downloaded from qemu.org.
+# The APK and the qemu source are not in git (see README, Setup).
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")" && pwd)"
-# ---- FILL IN: the direct link to the APK, once you have permission to publish it. Leave empty to put the file in apk/ by hand.
+# FILL IN: the direct APK link. Empty = put the APK in apk/ by hand.
 APK_URL_DEFAULT=""
 
 APK_NAME="nb_68.279_release_7c5c5152.apk"

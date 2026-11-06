@@ -4,12 +4,12 @@
 #   NB_BATTLE_CONF=other.conf ./play.sh   the battle setup file (default battle.conf: map, map skin, brawlers, skins)
 #   NB_FPS=0 ./play.sh                    no on-screen FPS counter
 #   NB_ELIMINATION=0 ./play.sh            no brawlers-left count and no end at one brawler (back to the main menu)
-#   NB_STORM_RULES=0 ./play.sh             no Showdown storm rules (20 %%/s of max HP, +5 %%/s after 5 s)
-#   NB_CUBE_RULES=0 ./play.sh             no Showdown cube rules (pickup +400 HP, +10 %% damage per cube, cube counter)
-#   NB_TARGET_FPS=N ./play.sh            N > 0: game uncapped and nbgl presents at N fps (default 0 = the game's own 60 fps pacing)
+#   NB_STORM_RULES=0 ./play.sh            no Showdown storm rules (20 %/s of max HP, +5 %/s after 5 s)
+#   NB_CUBE_RULES=0 ./play.sh            no cube rules (pickup +400 HP, +10 % damage per cube, cube counter)
+#   NB_TARGET_FPS=N ./play.sh            experimental: uncapped game, presented at N fps (default: the game's 60 fps)
 # The game's ARM64 code (loader/nbhost, static) runs under the fast patched qemu-aarch64 (qemu/bin/qemu-aarch64-nb) with
 # no network (unshare -rn). Its GLES calls are replayed on this PC's GPU in an X11 window by glhost/nbgl.
-# Left mouse button = finger. W A S D / arrow keys = the movement joystick. Close the window to quit.
+# Left mouse button = finger. W A S D / arrow keys = move. Close the window to quit.
 set -e
 ROOT="$(cd "$(dirname "$0")" && pwd)"
 SIZE="${1:-2400x1080}"; DPI="${2:-450}"
