@@ -9,6 +9,9 @@
 # downloaded with NB_APK_URL; the qemu source is downloaded from qemu.org.
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")" && pwd)"
+# ---- FILL IN: the direct link to the APK, once you have permission to publish it. Leave empty to put the file in apk/ by hand.
+APK_URL_DEFAULT=""
+
 APK_NAME="nb_68.279_release_7c5c5152.apk"
 APK_SHA256="3c249ea89050220eb32fb7eff0a94f360eb88da19244fa96f51e596bc3dcee43"
 QEMU_URL="https://download.qemu.org/qemu-8.2.2.tar.xz"
@@ -32,15 +35,16 @@ fi
 say "game file (APK)"
 APK="$ROOT/apk/$APK_NAME"
 mkdir -p "$ROOT/apk"
+APK_URL="${NB_APK_URL:-$APK_URL_DEFAULT}"
 if [ -f "$APK" ] && sha_ok "$APK" "$APK_SHA256"; then
     echo "apk/$APK_NAME: ok"
-elif [ -n "${NB_APK_URL:-}" ]; then
-    echo "downloading the APK from NB_APK_URL ..."
-    curl -fL --retry 3 -o "$APK.part" "$NB_APK_URL"
+elif [ -n "$APK_URL" ]; then
+    echo "downloading the APK ..."
+    curl -fL --retry 3 -o "$APK.part" "$APK_URL"
     mv "$APK.part" "$APK"
-    sha_ok "$APK" "$APK_SHA256" || { echo "checksum mismatch: the file at NB_APK_URL is not $APK_NAME" >&2; exit 1; }
+    sha_ok "$APK" "$APK_SHA256" || { echo "checksum mismatch: the file is not $APK_NAME (sha256 $APK_SHA256)" >&2; exit 1; }
 else
-    echo "The APK is missing. Put $APK_NAME into apk/, or rerun with NB_APK_URL=<where you host it>." >&2
+    echo "The APK is missing. Put $APK_NAME into apk/, or set NB_APK_URL=<link> and rerun." >&2
     exit 1
 fi
 if [ ! -f "$ROOT/apk_extract/lib/arm64-v8a/libg.so" ]; then

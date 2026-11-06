@@ -23,6 +23,11 @@ Three large files are not in git (GitHub rejects files over 100 MB):
 The APK is checked by its sha256 (`3c249ea89050220eb32fb7eff0a94f360eb88da19244fa96f51e596bc3dcee43`). A download
 with the wrong checksum is rejected.
 
+Two settings in `setup.sh`:
+
+- `APK_URL_DEFAULT` (near the top): the direct link to the APK. It's empty until the owner has permission to publish the file. Until then, put the APK in `apk/` by hand, or pass `NB_APK_URL=<link>` when running the script.
+- `TORCH_INDEX_URL` (RL repo only): the torch build to install. The default is PyPI. For an AMD GPU, use the ROCm index from pytorch.org's install selector. The code was tested with torch 2.11 (ROCm).
+
 ## Play
 
 ```bash
